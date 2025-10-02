@@ -10,25 +10,38 @@
 <body>
   <main>
     <h1>Welcome to Funfu</h1>
+
     <form id="login-form">
       <input type="email" id="email" placeholder="Email" required><br>
       <input type="password" id="password" placeholder="Password" required><br>
-      <button type="submit">Login</button>
+      <button type="submit" class="btn">Login</button>
     </form>
 
-    <button id="google-login">Login with Google</button>
+    <button id="google-login" class="btn btn-google">
+      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
+      Sign in with Google
+    </button>
   </main>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } 
       from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { loadFirebase } from "./firebase-loader.js";
 
-    loadFirebase().then(config => {
+    async function getFirebaseConfig() {
+      const response = await fetch("domain.html");
+      const text = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, "text/html");
+      const configEl = doc.querySelector("#firebase-config");
+      return JSON.parse(configEl.textContent);
+    }
+
+    getFirebaseConfig().then(config => {
       const app = initializeApp(config);
       const auth = getAuth(app);
 
+      // Email login
       document.getElementById("login-form").addEventListener("submit", e => {
         e.preventDefault();
         const email = document.getElementById("email").value;
@@ -36,12 +49,18 @@
 
         signInWithEmailAndPassword(auth, email, password)
           .then(() => window.location.href = "profile.html")
-          .catch(err => alert(err.message));
+          .catch(err => alert("Error: " + err.message));
       });
 
+      // Google login
       document.getElementById("google-login").addEventListener("click", () => {
         const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider).then(() => window.location.href = "profile.html");
+        signInWithPopup(auth, provider)
+          .then(result => {
+            console.log("Google user:", result.user);
+            window.location.href = "profile.html";
+          })
+          .catch(err => alert("Google login failed: " + err.message));
       });
     });
   </script>
