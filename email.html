@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Email - Funfu</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"></script>
+</head>
+<body>
+  <script type="module" src="navbar.js"></script>
+  <main>
+    <h1>Email System</h1>
+    <h2>Compose</h2>
+    <input id="to" placeholder="Recipient UID"><br>
+    <textarea id="msg" placeholder="Message"></textarea><br>
+    <button id="send">Send</button>
+
+    <h2>Inbox</h2>
+    <ul id="inbox"></ul>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { loadFirebase } from "./firebase-loader.js";
+
+    loadFirebase().then(config => {
+      const app = initializeApp(config);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      onAuthStateChanged(auth, async user => {
+        if (!user) { window.location.href = "login.html"; return; }
+
+        document.getElementById("send").onclick = async () => {
+          await addDoc(collection(db, "emails"), {
+            to: document.getElementById("to").value,
+            from: user.uid,
+            msg: document.getElementById("msg").value,
+            time: Date.now()
+          });
+          alert("Sent!");
+        };
+
+        const q = query(collection(db, "emails"), where("to", "==", user.uid));
+        const snap = await getDocs(q);
+        const inbox = document.getElementById("inbox");
+        snap.forEach(doc => {
+          const li = document.createElement("li");
+          li.textContent = doc.data().msg + " (from " + doc.data().from + ")";
+          inbox.appendChild(li);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
