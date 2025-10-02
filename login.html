@@ -28,40 +28,39 @@
     import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } 
       from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    async function getFirebaseConfig() {
-      const response = await fetch("domain.html");
-      const text = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(text, "text/html");
-      const configEl = doc.querySelector("#firebase-config");
-      return JSON.parse(configEl.textContent);
-    }
+    // --- Firebase config directly in login.html ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6xF5RTX6wy87TT17q61nUzoHI70JBkcA",
+      authDomain: "funfu-b4ad8.firebaseapp.com",
+      projectId: "funfu-b4ad8",
+      storageBucket: "funfu-b4ad8.appspot.com",
+      messagingSenderId: "400767863064",
+      appId: "1:400767863064:web:xxxxxx"
+    };
 
-    getFirebaseConfig().then(config => {
-      const app = initializeApp(config);
-      const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-      // Email login
-      document.getElementById("login-form").addEventListener("submit", e => {
-        e.preventDefault();
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+    // --- Email login ---
+    document.getElementById("login-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-        signInWithEmailAndPassword(auth, email, password)
-          .then(() => window.location.href = "profile.html")
-          .catch(err => alert("Error: " + err.message));
-      });
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => window.location.href = "profile.html")
+        .catch(err => alert("Error: " + err.message));
+    });
 
-      // Google login
-      document.getElementById("google-login").addEventListener("click", () => {
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider)
-          .then(result => {
-            console.log("Google user:", result.user);
-            window.location.href = "profile.html";
-          })
-          .catch(err => alert("Google login failed: " + err.message));
-      });
+    // --- Google login ---
+    document.getElementById("google-login").addEventListener("click", () => {
+      const provider = new GoogleAuthProvider();
+      signInWithPopup(auth, provider)
+        .then(result => {
+          console.log("Google user:", result.user);
+          window.location.href = "profile.html";
+        })
+        .catch(err => alert("Google login failed: " + err.message));
     });
   </script>
 </body>
